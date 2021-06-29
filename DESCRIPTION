@@ -1,0 +1,25 @@
+Package: energybalance
+Type: Package
+Title: Distribution Matching Using Energy Balancing 
+Version: 0.0.1
+Authors@R: c(
+    person("Noah", "Greifer", role=c("aut", "cre"), 
+           email = "noah.greifer@gmail.com",
+	       comment=c(ORCID="0000-0003-3067-7154"))
+    )
+Description: Tools to perform energy balancing, a method of estimating weights 
+             analogous to inverse probability weights for use in matching a distribution
+             to a target distribution. The weights can be usef in a broad
+             class of methods, including reducing confounding in observational
+             studies, generalizing findings from a sample to a population, 
+             adjusting for censoring, and more. See Huling and Mak (2020) 
+             <http://arxiv.org/abs/2004.13962> for details on the method.
+Depends:
+    R (>= 3.4.0)
+Imports:
+    osqp (>= 0.6.0.2),
+    cobalt (>= 3.8.0),
+    distances
+Suggests:
+License: GPL
+Encoding: UTF-8

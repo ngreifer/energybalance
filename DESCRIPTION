@@ -21,5 +21,6 @@ Imports:
     cobalt (>= 3.8.0),
     distances
 Suggests:
+    WeightIt (>= 0.12.0)
 License: GPL
 Encoding: UTF-8

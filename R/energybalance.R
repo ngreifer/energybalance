@@ -1,10 +1,11 @@
 #Estimates energy balancing weights to match distributions
 
-energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, targetW = NULL, std = "studentized", improved = TRUE) {
-
-  sampleX <- process_X(sampleX)
+energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, targetW = NULL, std = "studentized", improved = TRUE,
+                          lambda = 0) {
 
   std <- match.arg(std, c("studentized", "mahalanobis", "none"))
+
+  sampleX <- process_X(sampleX, std)
 
   n_s <- nrow(sampleX)
 
@@ -14,6 +15,7 @@ energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, tar
     nz <- 1L
     improved <- FALSE
   } else {
+    Z <- process_Z(Z)
     z_levels <- unique(Z)
     nz <- length(z_levels)
   }
@@ -25,36 +27,50 @@ energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, tar
     tw <- sw
   }
   else {
-    targetX <- process_X(targetX)
+    targetX <- process_X(targetX, std)
   }
 
   n_t <- nrow(targetX)
   tw <- process_w(targetW, n = n_t)
 
+  check_lengths(sampleX, Z, sampleW)
+  check_lengths(targetX, targetW)
+  check_vars(sampleX, targetX)
+
   #Distance matrices
   #Standardize variables based on target sample
-  Sinv <- switch(std,
-                 "studentized" = generalized_inverse(wcov(targetX, tw, diag = TRUE)),
-                 "mahalanobis" = generalized_inverse(wcov(targetX, tw, diag = FALSE)),
-                 "none" = NULL)
+  if (std == "studentized") {
+    sds <- apply(targetX, 2, w_sd, w = tw)
+    sampleX <- scale(sampleX, scale = sds, center = FALSE)
+    targetX <- scale(targetX, scale = sds, center = FALSE)
+  }
+  else if (std == "mahalanobis") {
+    Sinv <- generalized_inverse(wcov(targetX, tw, diag = FALSE))
+    ch <- chol2(Sinv)
+    sampleX <- tcrossprod(sampleX, ch)
+    targetX <- tcrossprod(targetX, ch)
+  }
 
   min.w <- 1e-8
 
   P <- matrix(0, nrow = n_s, ncol = n_s)
   Q <- rep(0, n_s)
-  A <- matrix(0, nrow = n_s + nz, ncol = n_s)
-  l <- rep(min.w, n_s + nz)
-  u <- rep(Inf, n_s + nz)
 
-  diag(A)[seq_len(n_s)] <- 1
+  #Constraint matrix; sum of weights in each Z
+  A <- matrix(0, nrow = nz, ncol = n_s)
+  eq <- rep(0, nz)
+
+  #LB and LB for weights
+  lb <- rep(min.w, n_s)
+  ub <- rep(Inf, n_s)
 
   for (i in seq_len(nz)) {
     in_zi <- which(Z == z_levels[i])
     n_zi <- length(in_zi)
 
-    d_zi_zi <- dist_mat(sampleX[in_zi,,drop = FALSE], Sinv = Sinv)
+    d_zi_zi <- dist_mat(sampleX[in_zi,,drop = FALSE])
 
-    d_zi_t <- dist_mat(sampleX[in_zi,,drop = FALSE], targetX, Sinv = Sinv)
+    d_zi_t <- dist_mat(sampleX[in_zi,,drop = FALSE], targetX)
 
     sw_zi <- sw[in_zi]/n_zi
 
@@ -65,9 +81,8 @@ energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, tar
     }
     Q[in_zi] <- 2 * ((sw_zi * d_zi_t) %*% tw/n_t)
 
-    A[n_s + i, in_zi] <- sw[in_zi]
-    l[n_s + i] <- n_zi
-    u[n_s + i] <- n_zi
+    A[i, in_zi] <- sw[in_zi]
+    eq[i] <- n_zi
   }
 
   if (improved) {
@@ -84,20 +99,22 @@ energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, tar
       sw_z2 <- sw[in_z2]/n_z2
 
       d_z1_z2 <- dist_mat(sampleX[in_z1,,drop = FALSE],
-                          sampleX[in_z2,,drop = FALSE],
-                          Sinv = Sinv)
+                          sampleX[in_z2,,drop = FALSE])
 
       P[in_z1, in_z2] <- P[in_z1, in_z2] + xAy(sw_z1, d_z1_z2, sw_z2)
       P[in_z2, in_z1] <- t(P[in_z1, in_z2])
     }
   }
 
-  pars <- osqp::osqpSettings(verbose = FALSE,
-                             max_iter = 2000L,
-                             eps_abs = 1e-8,
-                             eps_rel = 1e-8)
-  opt.out <- osqp::solve_osqp(2 * P, Q, A, l, u, pars = pars)
-  w <- opt.out$x
+  if (length(lambda) == 0) lambda <- 0
+  else if (length(lambda) > 1 || !is.numeric(lambda) || lambda < 0) {
+    stop("lambda must be a single non-negative number.", call. = FALSE)
+  }
+  if (lambda > 0) {
+    P <- P + (lambda/n_s^2) * diag(n_s)
+  }
+
+  w <- quad_solve(solver = "osqp", P, Q, A, eq, lb, ub)
   w[w < min.w] <- min.w
 
   return(w)

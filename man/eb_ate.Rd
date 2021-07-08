@@ -42,7 +42,7 @@ Noah Greifer
 \seealso{
 \code{\link{energybalance}} for a more flexible interface that allows matching both groups to a target distribution other than the full sample.
 
-\code{\link[WeightIt]{method_energy}} for the implementation of energy balancing in \emph{WeightIt}, which has additional options to restrict the difference in means between covariates and can incorproate a penalty on the dispersion of the weights.
+\code{\link[WeightIt]{method_energy}} for the implementation of energy balancing in \emph{WeightIt}, which has additional options to restrict the difference in means between covariates.
 }
 \examples{
 

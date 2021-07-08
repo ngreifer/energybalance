@@ -3,10 +3,19 @@
 #Generalized inverse; port of MASS::ginv()
 generalized_inverse <- function(sigma) {
   sigmasvd <- svd(sigma)
-  pos <- sigmasvd$d > max(1e-7 * sigmasvd$d[1L], 0)
+  pos <- sigmasvd$d > max(1e-9 * sigmasvd$d[1L], 0)
   sigma_inv <- sigmasvd$v[, pos, drop = FALSE] %*% (sigmasvd$d[pos]^-1 * t(sigmasvd$u[, pos, drop = FALSE]))
   sigma_inv[upper.tri(sigma_inv)] <- t(sigma_inv)[upper.tri(t(sigma_inv))]
+
+  dimnames(sigma_inv) <- dimnames(sigma)
   return(sigma_inv)
+}
+
+#Choleski decomp, works for nonpositive definite matrices too
+chol2 <- function(Sinv) {
+  ch <- suppressWarnings(chol(Sinv, pivot = TRUE))
+  p <- order(attr(ch, "pivot"))
+  return(ch[,p])
 }
 
 #Speed-optimized shortcut for diag(x) %*% A %*% diag(y)
@@ -55,16 +64,105 @@ process_w <- function(W, Z = NULL, n = NULL) {
 }
 
 #Process covariates
-process_X <- function(X) {
-  nm <- deparse(substitute(X))
-  if (anyNA(X)) stop(paste0("NAs are not allowed in ", nm, "."), call. = FALSE)
+process_X <- function(X, std = "none") {
+  nm <- paste0("'", deparse(substitute(X)), "'")
   if (!is.matrix(X) && !is.data.frame(X)) stop(paste0(nm, " must be a data frame or matrix."), call. = FALSE)
+  if (anyNA(X)) stop(paste0("NAs are not allowed in ", nm, "."), call. = FALSE)
   if (is.data.frame(X)) {
-    if (any(sapply(X, is.factor))) X <- cobalt::splitfactor(X, drop.first = FALSE)
+    if (any(sapply(X, function(x) is.factor(x) || is.character(x))))
+      X <- cobalt::splitfactor(X, drop.first = "if2")
     X[sapply(X, is.logical)] <- lapply(X[sapply(X, is.logical)], as.numeric)
     X <- as.matrix(X)
   }
   if (is.character(X)) stop(paste0(nm, " must be a numeric matrix or data frame."), call. = FALSE)
 
   return(X)
+}
+
+#Process Z (and M)
+process_Z <- function(Z, bin = FALSE) {
+  nm <- paste0("'", deparse(substitute(Z)), "'")
+  if (!is.atomic(Z) || length(dim(Z)) > 0) stop(paste0(nm, " must be an atomic vector."), call. = FALSE)
+  if (anyNA(Z)) stop(paste0("NAs are not allowed in ", nm, "."), call. = FALSE)
+
+  if (bin) {
+    if (length(unique(Z)) != 2) stop(paste0(nm, " must have exactly 2 unique values."), call. = FALSE)
+    if (is.logical(Z)) Z <- as.numeric(Z)
+    else if (is.factor(Z)) Z <- as.numeric(Z == levels(Z)[2])
+    else Z <- as.numeric(Z == max(Z))
+  }
+
+  return(Z)
+}
+
+#Check to ensure lengths are correct
+check_lengths <- function(...) {
+  nm <- unlist(lapply(substitute(list(...))[-1], deparse1))
+
+  lens <- unlist(lapply(list(...), function(x) {
+    if (length(x) == 0) 0L
+    else if (length(dim(x)) == 0) length(x)
+    else nrow(x)
+  }))
+
+  nm <- nm[lens > 0]
+  lens <- lens[lens > 0]
+  if (length(lens) > 1) {
+    bad_lens <- which(lens != lens[1])
+    if (length(bad_lens) > 0) {
+      stop(paste0("The following argument(s) must have the same number of units as '", nm[1],"': ", paste0(nm[bad_lens], collapse = ", ")),
+           call. = FALSE)
+    }
+  }
+}
+
+#Check to ensure same variables are used
+check_vars <- function(sampleX, targetX) {
+
+  vn <- lapply(list(sampleX, targetX), function(x) {
+    n <- colnames(x)
+    if (length(n) == 0) n <- seq_len(ncol(x))
+    n
+  })
+
+  vn_len <- lengths(vn)
+
+  if (any(vn_len != vn_len[1])) {
+    stop("'sampleX' and 'targetX' must have the same number of columns.", call. = FALSE)
+  }
+
+  char_nm <- which(vapply(vn, is.character, logical(1L)))
+
+  if (length(char_nm) >= 2) {
+    if (any(!vn[char_nm[1]] %in% unlist(vn[char_nm]))) {
+      stop("'sampleX' and 'targetX' must have the same variable names.", call. = FALSE)
+    }
+  }
+
+}
+
+#Solve the qudratic program using a solver
+quad_solve <- function(solver = "osqp", P, Q, A, eq, lb, ub) {
+  if (solver == "osqp") {
+    A <- rbind(A, diag(length(lb)))
+    l <- c(eq, lb)
+    u <- c(eq, ub)
+
+    pars <- osqp::osqpSettings(verbose = FALSE,
+                               max_iter = 2000L,
+                               eps_abs = 1e-8,
+                               eps_rel = 1e-8)
+    opt.out <- osqp::solve_osqp(P = 2 * P, q = Q, A = A, l = l, u = u, pars = pars)
+    w <- opt.out$x
+
+    if (abs(max(w) - min(w)) < sqrt(.Machine$double.eps)) {
+      warning("The optimization failed to converge. Try running it again.", call. = FALSE)
+    }
+  }
+
+  return(w)
+}
+
+if (FALSE) {
+  for (i in dir("R/")) source(paste0("R/", i))
 }

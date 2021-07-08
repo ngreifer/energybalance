@@ -9,7 +9,8 @@ Estimates energy balancing weights for matching a sample distribution to a targe
 \usage{
 energybalance(sampleX, Z = NULL, targetX = NULL,
               sampleW = NULL, targetW = NULL,
-              std = "studentized", improved = TRUE)
+              std = "studentized", improved = TRUE,
+              lambda = 0)
 }
 
 \arguments{
@@ -33,6 +34,9 @@ optional; a vector of sampling weights for the target.
 }
   \item{improved}{
 \code{logical}; when \code{Z} is specified, whether to additional balance the distributions between treatment groups. If \code{TRUE}, the energy distance between treatment groups and between each treatment group and the target distribution will be minimized. If \code{FALSE}, only the energy distance between each treatment group and the target distribution will be minimized. Default is \code{TRUE} as recommended by Huling and Mak (2020). Ignored when \code{Z} is \code{NULL}.
+}
+  \item{lambda}{
+a penalty on the sum of the squared weights. \code{lambda/nrow(sampleX)^2} times the sum of the squared weights is added to the objective function. Increasing \code{lambda} preserves the effective sample size of the weighted sample at the expense of balance.
 }
 }
 \value{

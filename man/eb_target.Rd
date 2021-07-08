@@ -8,7 +8,8 @@ Estimate Energy Balancing Weights To Match a Sample To a Target
 }
 \usage{
 eb_target(sampleX, targetX, sampleW = NULL,
-          targetW = NULL, std = "studentized")
+          targetW = NULL, std = "studentized",
+          lambda = 0)
 }
 \arguments{
   \item{sampleX}{
@@ -25,6 +26,9 @@ optional; a vector of sampling weights for the target.
 }
   \item{std}{
 \code{character}; whether to standardize the covariates. If \code{"studentized"}, the distance matrix used will be the Euclidean distance with each variable scaled using its standard deviation in the target distribution (weighted by \code{targetW} if supplied). If \code{"mahalanobis"}, the distance matrix used will be the Mahalanobis distance computed using the covariance matrix of the target distribution (weighted by \code{targetW} if supplied). If \code{"none"}, the distance matrix used will be the Euclidean distance matrix. Default is \code{"studentized"}. Abbreviations allowed.
+}
+  \item{lambda}{
+a penalty on the sum of the squared weights. \code{lambda/nrow(sampleX)^2} times the sum of the squared weights is added to the objective function. Increasing \code{lambda} preserves the effective sample size of the weighted sample at the expense of balance.
 }
 }
 \value{

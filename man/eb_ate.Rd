@@ -9,7 +9,7 @@ Estimate Energy Balancing Weights for the Average Treatment Effect
 }
 \usage{
 eb_ate(sampleX, Z, sampleW = NULL, std = "studentized",
-       improved = TRUE)
+       improved = TRUE, lambda = 0)
 }
 \arguments{
   \item{sampleX}{
@@ -26,6 +26,9 @@ optional; a vector of sampling weights for the sample. The product of the estima
 }
   \item{improved}{
 \code{logical}; whether to additional balance the distributions between treatment groups. If \code{TRUE}, the energy distance between treatment groups and between each treatment group and the full sample distribution will be minimized. If \code{FALSE}, only the energy distance between each treatment group and the full sample distribution will be minimized. Default is \code{TRUE} as recommended by Huling and Mak (2020).
+}
+  \item{lambda}{
+a penalty on the sum of the squared weights. \code{lambda/nrow(sampleX)^2} times the sum of the squared weights is added to the objective function. Increasing \code{lambda} preserves the effective sample size of the weighted sample at the expense of balance.
 }
 }
 \value{

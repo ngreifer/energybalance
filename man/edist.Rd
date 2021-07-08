@@ -7,7 +7,7 @@ Weighted Energy Distance
 Computes the (weighted) energy distance between two distributions.
 }
 \usage{
-edist(sampleX, targetX = sampleX, sampleW = NULL, targetW = NULL,
+edist(sampleX, targetX = NULL, sampleW = NULL, targetW = NULL,
       Z = NULL, std = "studentized")
 }
 \arguments{
@@ -15,7 +15,7 @@ edist(sampleX, targetX = sampleX, sampleW = NULL, targetW = NULL,
 a matrix of covariates composing the sample distribution.
 }
   \item{targetX}{
-a matrix of covariates composing the target distribution.
+a matrix of covariates composing the target distribution. If \code{NULL}, \code{sampleX} will be used.
 }
   \item{sampleW}{
 optional; a vector of weights for the sample.
@@ -31,13 +31,19 @@ a vector denoting group membership. See Details.
 }
 }
 \details{
-\code{eidts} computes the (weighted) energy distance between a sample and a target distribution or between two samples distributions. When \code{Z} is \code{NULL}, the (weighted) energy distance is computed between the sample represented by \code{sampleX} and the target represented by \code{targetX}. If \code{std} is \code{TRUE}, the standardization occurs using \code{targetX} (and \code{targetW} if supplied). When \code{Z} is not \code{NULL}, the (weighted) energy distance is computed between the groups denoted by \code{Z}. If \code{std} is \code{TRUE}, the standardization occurs using \code{targetX} and \code{targetW}, but otherwise, they are ignored.
+\code{edist()} computes the (weighted) energy distance between a sample and a target distribution or between two samples distributions. When \code{Z} is \code{NULL}, the (weighted) energy distance is computed between the sample represented by \code{sampleX} and the target represented by \code{targetX}. If \code{std} is \code{TRUE}, the standardization occurs using \code{targetX} (and \code{targetW} if supplied). When \code{Z} is not \code{NULL}, the (weighted) energy distance is computed between the groups denoted by \code{Z}. If \code{std} is \code{TRUE}, the standardization occurs using \code{targetX} and \code{targetW}, but otherwise, they are ignored.
 
 To compute the energy distance between a weighted sample and a target distribution, use
 \preformatted{edist(sampleX, targetX = targetX, sampleW = sampleW)}
 
 To compute the energy distance between two weighted groups denoted by \code{Z}, use
 \preformatted{edist(sampleX, sampleW = sampleW, Z = Z)}
+
+To compute the criterion minimized by \code{eb_ate()} with \code{improved = TRUE}, use
+\preformatted{
+edist(sampleX[Z==1,], targetX = sampleX, sampleW = sampleW[Z==1]) +
+  edist(sampleX[Z==0,], targetX = sampleX, sampleW = sampleW[Z==0]) +
+  edist(sampleX, sampleW = sampleW, Z = Z)}
 }
 \value{
 A single value denoting the (weighted) energy distance between the two distributions.

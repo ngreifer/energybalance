@@ -13,12 +13,13 @@ energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, tar
     Z <- rep(0L, n_s)
     z_levels <- 0L
     nz <- 1L
-    improved <- FALSE
   } else {
     Z <- process_Z(Z)
     z_levels <- unique(Z)
     nz <- length(z_levels)
   }
+
+  if (nz == 1L) improved <- FALSE
 
   sw <- process_w(sampleW, Z, n = n_s)
 

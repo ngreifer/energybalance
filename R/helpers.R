@@ -49,6 +49,11 @@ wcov <- function(X, W = NULL, diag = FALSE) {
   }
 }
 
+#Computes v1 %*% M %*% v2 efficiently
+quad_mult <- function(v1, M, v2 = v1) {
+  tcrossprod(v1, tcrossprod(v2, M))
+}
+
 #Process supplied weights
 process_w <- function(W, Z = NULL, n = NULL) {
   if (is.null(Z)) {
@@ -63,15 +68,17 @@ process_w <- function(W, Z = NULL, n = NULL) {
   W
 }
 
-#Process covariates
+#Process covariates (and M)
 process_X <- function(X, std = "none") {
   nm <- paste0("'", deparse(substitute(X)), "'")
-  if (!is.matrix(X) && !is.data.frame(X)) stop(paste0(nm, " must be a data frame or matrix."), call. = FALSE)
+  if (is.atomic(X) && length(dim(X)) == 0) X <- data.frame(X)
+  else if (!is.matrix(X) && !is.data.frame(X)) stop(paste0(nm, " must be a data frame or matrix."), call. = FALSE)
   if (anyNA(X)) stop(paste0("NAs are not allowed in ", nm, "."), call. = FALSE)
   if (is.data.frame(X)) {
+    logicals <- which(vapply(X, is.logical, logical(1L)))
+    X[logicals] <- lapply(X[logicals], as.numeric)
     if (any(sapply(X, function(x) is.factor(x) || is.character(x))))
       X <- cobalt::splitfactor(X, drop.first = "if2")
-    X[sapply(X, is.logical)] <- lapply(X[sapply(X, is.logical)], as.numeric)
     X <- as.matrix(X)
   }
   if (is.character(X)) stop(paste0(nm, " must be a numeric matrix or data frame."), call. = FALSE)
@@ -79,7 +86,7 @@ process_X <- function(X, std = "none") {
   return(X)
 }
 
-#Process Z (and M)
+#Process Z
 process_Z <- function(Z, bin = FALSE) {
   nm <- paste0("'", deparse(substitute(Z)), "'")
   if (!is.atomic(Z) || length(dim(Z)) > 0) stop(paste0(nm, " must be an atomic vector."), call. = FALSE)
@@ -134,7 +141,7 @@ check_vars <- function(sampleX, targetX) {
   char_nm <- which(vapply(vn, is.character, logical(1L)))
 
   if (length(char_nm) >= 2) {
-    if (any(!vn[char_nm[1]] %in% unlist(vn[char_nm]))) {
+    if (!all(vn[[char_nm[1]]] %in% unlist(vn[char_nm]))) {
       stop("'sampleX' and 'targetX' must have the same variable names.", call. = FALSE)
     }
   }
@@ -152,11 +159,18 @@ quad_solve <- function(solver = "osqp", P, Q, A, eq, lb, ub) {
                                max_iter = 2000L,
                                eps_abs = 1e-8,
                                eps_rel = 1e-8)
-    opt.out <- osqp::solve_osqp(P = 2 * P, q = Q, A = A, l = l, u = u, pars = pars)
-    w <- opt.out$x
+    for (i in 1:15) {
+      #May need to run multiple times to get a solution
+      opt.out <- osqp::solve_osqp(P = 2 * P, q = Q, A = A, l = l, u = u, pars = pars)
+      w <- opt.out$x
 
-    if (abs(max(w) - min(w)) < sqrt(.Machine$double.eps)) {
-      warning("The optimization failed to converge. Try running it again.", call. = FALSE)
+      if (abs(max(w) - min(w)) > sqrt(.Machine$double.eps)) {
+        break
+      }
+      else if (i == 15) {
+        warning("The optimization failed to converge. Try running it again.", call. = FALSE)
+        w[] <- 1
+      }
     }
   }
 

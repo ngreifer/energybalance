@@ -12,13 +12,13 @@ eb_mediation(sampleX, Z, M, sampleW = NULL,
 }
 \arguments{
   \item{sampleX}{
-a matrix of covariates composing the sample distribution to be weighted.
+a matrix or data frame of covariates composing the sample distribution to be weighted. See \code{\link{energybalance}} for how this is processed.
 }
   \item{Z}{
 a vector denoting treatment group membership. The group with \code{Z==1} will be the treated group for which the weights are being estimated, and the group with \code{Z==0} will be the control group that the weighted treatment group is meant to resemble.
 }
   \item{M}{
-a vector or matrix containing the values of the mediator(s).
+a vector or matrix containing the values of the mediator(s). This is processed the same way as \code{sampleX}.
 }
   \item{sampleW}{
 optional; a vector of sampling weights for the sample. The product of the estimated weights and \code{sampleW} will be the distribution-matching weights.

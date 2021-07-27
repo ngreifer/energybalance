@@ -13,7 +13,7 @@ eb_att(sampleX, Z, sampleW = NULL, std = "studentized",
 }
 \arguments{
   \item{sampleX}{
-a matrix of covariates composing the sample distribution to be weighted.
+a matrix or data frame of covariates composing the sample distribution to be weighted. See \code{\link{energybalance}} for how this is processed.
 }
   \item{Z}{
 a vector denoting treatment group membership.

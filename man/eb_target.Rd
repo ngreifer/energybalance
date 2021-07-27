@@ -13,10 +13,10 @@ eb_target(sampleX, targetX, sampleW = NULL,
 }
 \arguments{
   \item{sampleX}{
-a matrix of covariates composing the sample distribution to be weighted.
+a matrix or data frame of covariates composing the sample distribution to be weighted. See \code{\link{energybalance}} for how this is processed.
 }
   \item{targetX}{
-a matrix of covariates composing the target distribution.
+a matrix or data frame of covariates composing the target distribution. See \code{\link{energybalance}} for how this is processed.
 }
   \item{sampleW}{
 optional; a vector of sampling weights for the sample. The product of the estimated weights and \code{sampleW} will be the distribution-matching weights.

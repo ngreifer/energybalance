@@ -18,7 +18,7 @@ a matrix of covariates composing the sample distribution to be weighted.
 a vector denoting treatment group membership. The group with \code{Z==1} will be the treated group for which the weights are being estimated, and the group with \code{Z==0} will be the control group that the weighted treatment group is meant to resemble.
 }
   \item{M}{
-a vector containing the values of the mediator.
+a vector or matrix containing the values of the mediator(s).
 }
   \item{sampleW}{
 optional; a vector of sampling weights for the sample. The product of the estimated weights and \code{sampleW} will be the distribution-matching weights.
@@ -46,12 +46,3 @@ Noah Greifer
 \examples{
 
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory (show via RShowDoc("KEYWORDS")):
-% \keyword{ ~kwd1 }
-% \keyword{ ~kwd2 }
-% Use only one keyword per line.
-% For non-standard keywords, use \concept instead of \keyword:
-% \concept{ ~cpt1 }
-% \concept{ ~cpt2 }
-% Use only one concept per line.

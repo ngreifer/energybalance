@@ -10,7 +10,7 @@ eb_target <- function(sampleX, targetX, sampleW = NULL, targetW = NULL, std = "s
 
 eb_mediation <- function(sampleX, Z, M, sampleW = NULL, std = "studentized", lambda = 0) {
   Z <- process_Z(Z, bin = TRUE)
-  M <- process_Z(M)
+  M <- process_X(M)
 
   sampleW <- process_w(sampleW, Z)
 

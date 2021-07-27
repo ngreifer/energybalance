@@ -102,6 +102,24 @@ process_Z <- function(Z, bin = FALSE) {
   return(Z)
 }
 
+#Process focal for eb_att
+process_focal <- function(focal = NULL, Z) {
+  if (is.null(focal)) {
+    if (is.factor(Z) && levels(Z)[nlevels(Z)] %in% Z) focal <- levels(Z)[nlevels(Z)]
+    else focal <- max(Z)
+  }
+  else {
+    if (length(focal) != 1) {
+      stop("'focal' must be a single value.", call. = FALSE)
+    }
+    if (!focal %in% Z) {
+      stop("'focal' must be a value in Z.", call. = FALSE)
+    }
+  }
+
+  return(focal)
+}
+
 #Check to ensure lengths are correct
 check_lengths <- function(...) {
   nm <- unlist(lapply(substitute(list(...))[-1], deparse1))

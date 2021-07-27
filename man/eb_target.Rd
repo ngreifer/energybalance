@@ -39,17 +39,10 @@ A vector of weights, one for each row of \code{sampleX}.
 Noah Greifer
 }
 \seealso{
-\code{\link{energybalance}}
+\code{\link{energybalance}} for a more flexible interface
+
+\code{\link{eb_att}} for a more dedicated function for estimating weights for the ATT, especially with multiple control groups.
 }
 \examples{
 
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory (show via RShowDoc("KEYWORDS")):
-% \keyword{ ~kwd1 }
-% \keyword{ ~kwd2 }
-% Use only one keyword per line.
-% For non-standard keywords, use \concept instead of \keyword:
-% \concept{ ~cpt1 }
-% \concept{ ~cpt2 }
-% Use only one concept per line.

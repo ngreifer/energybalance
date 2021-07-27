@@ -5,7 +5,7 @@ energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, tar
 
   std <- match.arg(std, c("studentized", "mahalanobis", "none"))
 
-  sampleX <- process_X(sampleX, std)
+  sampleX <- process_X(sampleX)
 
   n_s <- nrow(sampleX)
 
@@ -27,7 +27,7 @@ energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, tar
     tw <- sw
   }
   else {
-    targetX <- process_X(targetX, std)
+    targetX <- process_X(targetX)
   }
 
   n_t <- nrow(targetX)
@@ -108,7 +108,7 @@ energybalance <- function(sampleX, Z = NULL, targetX = NULL, sampleW = NULL, tar
 
   if (length(lambda) == 0) lambda <- 0
   else if (length(lambda) > 1 || !is.numeric(lambda) || lambda < 0) {
-    stop("lambda must be a single non-negative number.", call. = FALSE)
+    stop("'lambda' must be a single non-negative number.", call. = FALSE)
   }
   if (lambda > 0) {
     P <- P + (lambda/n_s^2) * diag(n_s)

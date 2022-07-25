@@ -43,7 +43,7 @@ a penalty on the sum of the squared weights. \code{lambda/nrow(sampleX)^2} times
 A vector of weights, one for each row of \code{sampleX}.
 }
 \details{
-\code{energybalance} is the main function of the \emph{energybalance} package. It estimates energy balancing weights for a broad set of scenarios, including estimating average treatment effects and generalizing or transporting estimates. The wrappers for \code{energybalance}--\code{\link{eb_ate}}, \code{\link{eb_target}}, and \code{\link{eb_mediation}}--simplify its use for specific purposes.
+\code{energybalance} is the main function of the \emph{energybalance} package. It estimates energy balancing weights for a broad set of scenarios, including estimating average treatment effects and generalizing or transporting estimates. The wrappers for \code{energybalance}--\code{\link{eb_ate}}, \code{\link{eb_att}}, \code{\link{eb_target}}, and \code{\link{eb_mediation}}--simplify its use for specific purposes.
 
 Essentially, \code{energybalance} estimates energy balancing weights to make the sample distribution (\code{sampleX}) resemble the target distribution (\code{targetX}) by minimizing the weighted energy distance between them. When a treatment vector (\code{Z}) is supplied, the weights make each treatment group resemble the target distribution. When sampling weights for the target distribution (\code{targetW}) are supplied, the weights make the sample resemble the weighted target distribution; this is especially useful when weighting a sample to resemble a representative sample that requires sampling weights.
 
@@ -65,7 +65,7 @@ The wrapper functions:
   \code{\link{eb_ate}} for weights that estimate the average treatment effect (ATE).
  }
  \item {
-  \code{\link{eb_att}} for weights that estimate the average treatment effect on the treated(ATT).
+  \code{\link{eb_att}} for weights that estimate the average treatment effect on the treated (ATT).
  }
  \item {
   \code{\link{eb_target}} for weights that allow generalizability or transportability of a sample to a target or adjust for censoring by loss to follow-up.

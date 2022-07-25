@@ -35,7 +35,8 @@ eb_att <- function(sampleX, Z, sampleW = NULL, std = "studentized", focal = NULL
 
   w <- rep(1, length(Z))
 
-  e <- energybalance(sampleX[Z != focal,,drop = FALSE], Z = Z[Z != focal], targetX = sampleX[Z == focal,,drop = FALSE],
+  e <- energybalance(sampleX[Z != focal,,drop = FALSE], Z = Z[Z != focal],
+                     targetX = sampleX[Z == focal,, drop = FALSE],
                      sampleW = sampleW[Z != focal], targetW = sampleW[Z == focal],
                      std = std, improved = improved, lambda = lambda)
 

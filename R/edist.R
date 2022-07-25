@@ -132,7 +132,6 @@ edist_ate <- function(sampleX, Z, sampleW = NULL, targetW = NULL, std = "student
     ed[i] <- 2 * quad_mult(sw_zi, d_zi_t, tw)/(n_zi*n_t) - quad_mult(sw_zi, d_zi_zi, sw_zi)/(n_zi*n_zi) - quad_mult(tw, d_t, tw)/(n_t*n_t)
   }
 
-
   if (improved) {
     z_combns <- utils::combn(seq_len(nz), 2, simplify = FALSE)
     ed_imp <- setNames(numeric(length(z_combns)), sapply(z_combns, function(t_) paste(z_levels[t_], collapse = " vs. ")))

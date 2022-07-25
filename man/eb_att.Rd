@@ -5,7 +5,7 @@
 Estimate Energy Balancing Weights for the Average Treatment Effect on the Treated
 }
 \description{
-\code{eb_att} is a wrapper for \code{\link{energybalance}} that focuses on using it to estimate energy balancing weights for the average treatment effect on the treated (ATT) with or more control groups. The energy distance between each non-focal treatment group and the focal treatment group is minimized.
+\code{eb_att} is a wrapper for \code{\link{energybalance}} that focuses on using it to estimate energy balancing weights for the average treatment effect on the treated (ATT) with one or more control (non-focal) groups. The energy distance between each non-focal treatment group and the focal treatment group is minimized.
 }
 \usage{
 eb_att(sampleX, Z, sampleW = NULL, std = "studentized",
@@ -28,7 +28,7 @@ optional; a vector of sampling weights for the sample. The product of the estima
 a value of the \code{Z} to be considered the "focal" or "treated" group. If \code{NULL}, if \code{Z} is a factor, then \code{focal = levels(Z)[nlevels(Z)]}, and otherwise, \code{focal = max(Z)}.
 }
   \item{improved}{
-\code{logical}; whether to additionally balance the distributions between non-treatment groups when there are mor than two groups. If \code{TRUE}, the energy distance between non-focal treatment groups and between each non-focal treatment group and the focal treatment group distribution will be minimized. If \code{FALSE}, only the energy distance between each non-focal treatment group and the focal treatment group distribution will be minimized. Default is \code{FALSE} unlike other function in the package. With only two groups, this argument is ignored.
+\code{logical}; whether to additionally balance the distributions between non-treatment groups when there are more than two groups. If \code{TRUE}, the energy distance between non-focal treatment groups and between each non-focal treatment group and the focal treatment group distribution will be minimized. If \code{FALSE}, only the energy distance between each non-focal treatment group and the focal treatment group distribution will be minimized. Default is \code{FALSE} unlike other functions in the package. With only two groups, this argument is ignored.
 }
   \item{lambda}{
 a penalty on the sum of the squared weights. \code{lambda/sum(Z!=focal)^2} times the sum of the squared weights is added to the objective function. Increasing \code{lambda} preserves the effective sample size of the weighted sample at the expense of balance.
